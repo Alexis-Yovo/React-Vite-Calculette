@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 const Buttons = ({ onAdd, onMultiply, onReset }) => {
   return (
@@ -8,6 +9,12 @@ const Buttons = ({ onAdd, onMultiply, onReset }) => {
       <button onClick={onReset}>Reset</button>
     </div>
   );
+};
+
+Buttons.propTypes = {
+  onAdd: PropTypes.func.isRequired,
+  onMultiply: PropTypes.func.isRequired,
+  onReset: PropTypes.func.isRequired,
 };
 
 export default Buttons;

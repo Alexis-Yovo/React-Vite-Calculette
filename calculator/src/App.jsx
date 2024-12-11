@@ -1,31 +1,26 @@
-import  { useReducer } from 'react';
-import Buttons from './component/Buttons';
-import Inputs from './component/Inputs';
-import Result from './component/Result';
+import React, { useReducer } from 'react';
+import Display from './component/Display';
+import NumberButtons from './component/NumberButtons';
+import OperatorButtons from './component/OperatorButtons';
+import './App.css';
 
 const initialState = {
-  a: '',
-  b: '',
+  input: '0',
   result: null,
   error: null,
 };
 
 const reducer = (state, action) => {
   switch (action.type) {
-    case 'SET_A':
-      return { ...state, a: action.payload, error: null };
-    case 'SET_B':
-      return { ...state, b: action.payload, error: null };
-    case 'ADD':
-      if (state.a === '' || state.b === '') {
-        return { ...state, error: 'Veuillez entrer deux nombres.' };
+    case 'SET_INPUT':
+      return { ...state, input: action.payload, error: null };
+    case 'EVALUATE':
+      try {
+        const result = eval(state.input.replace('x', '*').replace('÷', '/'));
+        return { ...state, result, input: result.toString(), error: null };
+      } catch (e) {
+        return { ...state, error: 'Erreur de calcul.' };
       }
-      return { ...state, result: parseFloat(state.a) + parseFloat(state.b), error: null };
-    case 'MULTIPLY':
-      if (state.a === '' || state.b === '') {
-        return { ...state, error: 'Veuillez entrer deux nombres.' };
-      }
-      return { ...state, result: parseFloat(state.a) * parseFloat(state.b), error: null };
     case 'RESET':
       return { ...initialState };
     default:
@@ -36,11 +31,40 @@ const reducer = (state, action) => {
 const App = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
+  const handleNumberClick = (number) => {
+    let newInput = state.input;
+    if (newInput === '0' && number === 0) {
+      newInput = '0';
+    } else if (newInput === '0' && number !== 0) {
+      newInput = number.toString();
+    } else {
+      newInput += number.toString();
+    }
+    dispatch({ type: 'SET_INPUT', payload: newInput });
+  };
+
+  const handleOperatorClick = (operator) => {
+    if (operator === 'reset') {
+      dispatch({ type: 'RESET' });
+    } else if (operator === '=') {
+      dispatch({ type: 'EVALUATE' });
+    } else {
+      const lastChar = state.input[state.input.length - 1];
+      if (lastChar === '+' || lastChar === '-' || lastChar === 'x' || lastChar === '÷') {
+        // Replace the last operator with the new one
+        dispatch({ type: 'SET_INPUT', payload: state.input.slice(0, -1) + operator });
+      } else {
+        dispatch({ type: 'SET_INPUT', payload: state.input + operator });
+      }
+    }
+  };
+
   return (
-    <div>
-      <Result result={state.result} error={state.error} />
-      <Inputs a={state.a} b={state.b} onSetA={(value) => dispatch({ type: 'SET_A', payload: value })} onSetB={(value) => dispatch({ type: 'SET_B', payload: value })} />
-      <Buttons onAdd={() => dispatch({ type: 'ADD' })} onMultiply={() => dispatch({ type: 'MULTIPLY' })} onReset={() => dispatch({ type: 'RESET' })} />
+    <div className="calculator">
+      <Display input={state.input} />
+      <NumberButtons onNumberClick={handleNumberClick} />
+      <OperatorButtons onOperatorClick={handleOperatorClick} />
+      {state.error && <div className="error">{state.error}</div>}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React from 'react';
+import PropTypes from 'prop-types';
 
 const Result = ({ result, error }) => {
   return (
@@ -7,6 +7,11 @@ const Result = ({ result, error }) => {
       {result !== null && <div>Résultat: {result}</div>}
     </div>
   );
+};
+
+Result.propTypes = {
+  result: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  error: PropTypes.string,
 };
 
 export default Result;
